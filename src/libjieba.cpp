@@ -17,23 +17,25 @@ void jieba_destroy_context(jieba_context ctx)
     delete static_cast<cppjieba::Jieba *>(ctx);
 }
 
-int jieba_cut(jieba_context ctx, const char *sentence, std::size_t len, char **words)
+int jieba_cut(jieba_context ctx, const char *sentence, std::size_t len, jieba_words *words)
 {
     auto jieba = static_cast<cppjieba::Jieba *>(ctx);
 
-    std::vector<std::string> cut;
+    std::vector<std::string> cutted;
 
     std::string s(sentence, len);
 
-    jieba->Cut(s, cut);
+    jieba->Cut(s, cutted);
 
-    if (cut.size() > 0) {
-        *words = (char *)malloc(sizeof(char *) * cut.size());
+    words->count = cutted.size();
 
-        for (std::size_t i = 0; i < cut.size(); ++i) {
-            words[i] = strdup(cut[i].c_str());
+    if (cutted.size() > 0) {
+        words->words = (char **)malloc(sizeof(char *) * cutted.size());
+
+        for (std::size_t i = 0; i < cutted.size(); ++i) {
+            words->words[i] = strdup(cutted[i].c_str());
         }
     }
 
-    return cut.size();
+    return cutted.size();
 }

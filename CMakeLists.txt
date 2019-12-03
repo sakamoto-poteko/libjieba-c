@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(libjieba-c)
+project(jieba-c)
 
 #add_subdirectory(cppjieba)
 
