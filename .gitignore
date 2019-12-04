@@ -73,3 +73,5 @@ Thumbs.db
 
 *.user
 build/
+/.vs
+/CMakeSettings.json

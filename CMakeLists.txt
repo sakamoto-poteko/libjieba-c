@@ -8,6 +8,8 @@ include_directories("include")
 include_directories("cppjieba/include")
 include_directories("cppjieba/deps")
 
+add_definitions(-DLIBBUILD)
+
 set(LIBJIEBA_HDR
     include/libjieba.h
     )
@@ -18,5 +20,5 @@ set(LIBJIEBA_SRC
 set(DEPENDS
     )
 
-add_library(${PROJECT_NAME} STATIC ${LIBJIEBA_HDR} ${LIBJIEBA_SRC})
+add_library(${PROJECT_NAME} SHARED ${LIBJIEBA_HDR} ${LIBJIEBA_SRC})
 #target_link_libraries(${PROJECT_NAME} ${DEPENDS})
