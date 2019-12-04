@@ -75,3 +75,8 @@ Thumbs.db
 build/
 /.vs
 /CMakeSettings.json
+
+x86/
+x64/
+Debug/
+Release/
