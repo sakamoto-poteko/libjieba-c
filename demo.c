@@ -85,34 +85,51 @@ int main(void)
 
     jieba_tags tags = { 0 };
 
+    // Cut w/ HMM
     unsigned rc = jieba_cut(ctx, test_sentence1, &words_cut_hmm, true);
     print_jieba_words(test_sentence1, &words_cut_hmm);
     jieba_words_free(&words_cut_hmm);
 
+    // Cut w/o HMM
     rc = jieba_cut(ctx, test_sentence1, &words_cut_nohmm, false);
     print_jieba_words(test_sentence1, &words_cut_nohmm);
     jieba_words_free(&words_cut_nohmm);
 
+    // Cut All
     rc = jieba_cut_all(ctx, test_sentence2, &words_cut_all);
     print_jieba_words(test_sentence2, &words_cut_all);
     jieba_words_free(&words_cut_all);
 
+    // Cut for Search
     rc = jieba_cut_for_search(ctx, test_sentence3, &words_cut_for_search, true);
     print_jieba_words(test_sentence3, &words_cut_for_search);
     jieba_words_free(&words_cut_for_search);
 
+    // Cut w/ Tag
     rc = jieba_cut_with_tag(ctx, test_sentence4, &tags);
     print_jieba_tags(test_sentence4, &tags);
     jieba_tags_free(&tags);
 
-
-    jieba_extractor_context exctx = jieba_extractor_create_context_from_jieba_context(ctx);
-
     jieba_weights weights;
+
+    // Get extractor from Jieba context
+    jieba_extractor_context exctx = jieba_extractor_create_context_from_jieba_context(ctx);
     rc = jieba_extract(exctx, test_sentence4, 5, &weights);
     print_jieba_weights(test_sentence4, &weights);
     jieba_weights_free(&weights);
 
+    // !!!!! Always destroy extractor context before destroying Jieba context !!!
+    // If extractor ctx isn't created, destroy isn't needed
     jieba_extractor_destroy_context(exctx);
+
     jieba_destroy_context(ctx);
+
+    // Build a new extractor
+    exctx = jieba_extractor_create_context(DICT_PATH, HMM_PATH, USER_DICT, IDF_PATH, STOP_WORDS_PATH);
+    rc = jieba_extract(exctx, test_sentence4, 5, &weights);
+    print_jieba_weights(test_sentence4, &weights);
+    jieba_weights_free(&weights);
+    jieba_extractor_destroy_context(exctx);
+
+    return 0;
 }
