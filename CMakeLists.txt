@@ -6,8 +6,6 @@ include_directories("include")
 include_directories("cppjieba/include")
 include_directories("cppjieba/deps")
 
-add_definitions(-DLIBBUILD)
-
 # range-based loops, auto, etc...
 set(CMAKE_CXX_STANDARD_REQUIRED 11)
 
@@ -29,6 +27,7 @@ set(DEPENDS
     )
 
 add_library(${PROJECT_NAME} SHARED ${LIBJIEBA_HDR} ${LIBJIEBA_SRC})
+target_compile_definitions(${PROJECT_NAME} PRIVATE LIBBUILD)
 #target_link_libraries(${PROJECT_NAME} ${DEPENDS})
 
 OPTION(BUILD_DEMO "Build the demo for this library" FALSE) 
