@@ -314,7 +314,7 @@ void jieba_destroy_context(jieba_context ctx)
 void jieba_extractor_destroy_context(jieba_extractor_context ctx)
 {
     auto exctx = static_cast<__jieba_extractor_context*>(ctx);
-    if (exctx->created_from_jieba_context)
+    if (!exctx->created_from_jieba_context)
     {
         delete& exctx->extractor;
     }
