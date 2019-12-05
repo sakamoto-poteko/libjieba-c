@@ -37,6 +37,8 @@
 #else
 #define LIBJIEBA_API __declspec(dllimport)
 #endif
+#else
+#define LIBJIEBA_API
 #endif // 
 
 

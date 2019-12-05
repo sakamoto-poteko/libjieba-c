@@ -140,6 +140,7 @@ static unsigned int tag_vector_to_jieba_tags(const std::vector<std::pair<std::st
     }
 
     std::size_t words_array_len = 0, tags_array_len = 0;
+    std::size_t words_offset = 0, tags_offset = 0;
 
     for (const auto& pair : tags)
     {
@@ -172,7 +173,6 @@ static unsigned int tag_vector_to_jieba_tags(const std::vector<std::pair<std::st
         goto err_alloc_tags_tags;
     }
 
-    std::size_t words_offset = 0, tags_offset = 0;
     for (std::size_t i = 0; i < tags.size(); ++i)
     {
         char* word_ptr = result->words[0] + words_offset;
@@ -214,6 +214,8 @@ static unsigned int weight_vector_to_jieba_weights(const std::vector<std::pair<s
     weights->words = nullptr;
 
     std::size_t word_array_len = 0;
+    std::size_t offset = 0;
+
     for (const auto& pair : input)
     {
         word_array_len += pair.first.size() + 1;
@@ -237,7 +239,6 @@ static unsigned int weight_vector_to_jieba_weights(const std::vector<std::pair<s
         goto err_alloc_wv2w_weights;
     }
 
-    std::size_t offset = 0;
     for (std::size_t i = 0; i < input.size(); ++i)
     {
         const auto& word = input[i].first;
