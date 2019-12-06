@@ -1,0 +1,27 @@
+stages:
+- stage: Build
+  jobs:
+  - template: build.yml
+    parameters:
+      name: macOS
+      pool:
+        vmImage: 'macOS-latest'
+
+  - template: build.yml
+    parameters:
+      name: Linux
+      pool:
+        vmImage: 'ubuntu-latest'
+
+  - template: build.yml
+    parameters:
+      name: Windows
+      pool:
+        vmImage: 'windows-latest'
+
+- stage: Pack
+  jobs:
+  - job:
+    steps:
+    - publish: $(Build.SourcesDirectory)/runtimes.zip
+      artifact: Runtimes.zip
