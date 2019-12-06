@@ -1,0 +1,37 @@
+parameters:
+  name: ''
+  pool: ''
+  container: ''
+  rid: ''
+  output: ''
+  cross: false
+
+jobs:
+- job: ${{parameters.name}}
+  pool: ${{parameters.pool}}
+  steps:
+  - checkout: self
+    submodules: true
+  - ${{ if eq(parameters.cross, 'true') }}:
+    - bash: |
+        sudo apt-get -y install "gcc-${{parameters.triplet}}" "g++-${{parameters.triplet}}"
+      displayName: install_toolchain
+  - bash: |
+      build_dir="$(Build.SourcesDirectory)/build/${{parameters.rid}}"
+      echo $build_dir
+
+      echo "Create directories..."
+      mkdir -p $build_dir
+
+      echo "Generating toolchain..."
+      chmod +x $(Build.SourcesDirectory)/gen-toolchain.sh
+      $(Build.SourcesDirectory)/gen-toolchain.sh ${{parameters.triplet}}
+
+      cd $build_dir
+      echo "Building..."
+      cmake $(Build.SourcesDirectory) -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$(Build.SourcesDirectory)/toolchain.cmake
+      make
+    displayName: build
+
+  - publish: $(Build.SourcesDirectory)/build/${{parameters.rid}}/${{parameters.output}}
+    artifact: ${{parameters.rid}}

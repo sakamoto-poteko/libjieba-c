@@ -80,3 +80,8 @@ x86/
 x64/
 Debug/
 Release/
+out/
+
+runtimes/*
+*.nupkg
+libjieba-c.nuspec

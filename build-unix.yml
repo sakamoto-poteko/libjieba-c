@@ -1,0 +1,26 @@
+parameters:
+  name: ''
+  pool: ''
+  rid: ''
+  output: ''
+
+jobs:
+- job: ${{parameters.name}}
+  pool: ${{parameters.pool}}
+  steps:
+  - checkout: self
+    submodules: true
+  - script: |
+      build_dir="$(Build.SourcesDirectory)/build/${{parameters.rid}}"
+      echo "Build directory:"
+      echo $build_dir
+
+      echo "Create directories..."
+      mkdir -p $build_dir
+
+      cd $build_dir
+      echo "Building..."
+      cmake $(Build.SourcesDirectory) -DCMAKE_BUILD_TYPE=Release
+      make
+  - publish: $(Build.SourcesDirectory)/build/${{parameters.rid}}/${{parameters.output}}
+    artifact: ${{parameters.rid}}

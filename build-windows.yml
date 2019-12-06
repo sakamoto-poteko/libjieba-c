@@ -1,0 +1,32 @@
+parameters:
+  name: ''
+  pool: ''
+  rid: ''
+  vcvars: ''
+
+jobs:
+- job: ${{parameters.name}}
+  pool: ${{parameters.pool}}
+  steps:
+  - checkout: self
+    submodules: true
+  - pwsh: |
+      $build_dir = "$(Build.SourcesDirectory)\build\${{parameters.rid}}"
+      Write-Host "Build directory:"
+      Write-Host $build_dir
+
+      Write-Host "Create directories..."
+      New-Item $build_dir -ItemType Directory -ea 0
+      Set-Location $build_dir
+    displayName: 'create_dir'
+  - script: |
+      echo "Building..."
+      cd "$(Build.SourcesDirectory)\build\${{parameters.rid}}"
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{parameters.vcvars}}
+      cmake $(Build.SourcesDirectory) -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles"
+      nmake
+      echo %cd%
+      dir
+    displayName: 'build'
+  - publish: $(Build.SourcesDirectory)/build/${{parameters.rid}}/jieba-c.dll
+    artifact: ${{parameters.rid}}

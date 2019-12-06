@@ -1,27 +1,143 @@
 stages:
 - stage: Build
   jobs:
-  - template: build.yml
+  - template: build-unix.yml
     parameters:
-      name: macOS
+      name: osx_x64
       pool:
         vmImage: 'macOS-latest'
+      rid: 'osx-x64'
+      output: 'libjieba-c.dylib'
 
-  - template: build.yml
+  - template: build-debian.yml
     parameters:
-      name: Linux
+      name: linux_x64
       pool:
-        vmImage: 'ubuntu-latest'
-
-  - template: build.yml
+        vmImage: 'ubuntu-18.04'
+      triplet: x86_64-linux-gnu
+      rid: 'linux-x64'
+      output: 'libjieba-c.so'
+  - template: build-debian.yml
     parameters:
-      name: Windows
+      name: linux_x86
+      pool:
+        vmImage: 'ubuntu-18.04'
+      triplet: i686-linux-gnu
+      rid: 'linux-x86'
+      output: 'libjieba-c.so'
+      cross: true
+  - template: build-debian.yml
+    parameters:
+      name: linux_arm64
+      pool:
+        vmImage: 'ubuntu-18.04'
+      triplet: aarch64-linux-gnu
+      rid: 'linux-arm64'
+      output: 'libjieba-c.so'
+      cross: true
+  - template: build-debian.yml
+    parameters:
+      name: linux_arm
+      pool:
+        vmImage: 'ubuntu-18.04'
+      triplet: arm-linux-gnueabihf
+      rid: 'linux-arm'
+      output: 'libjieba-c.so'
+      cross: true
+
+  - template: build-windows.yml
+    parameters:
+      name: win_x64
       pool:
         vmImage: 'windows-latest'
-
-- stage: Pack
+      rid: 'win-x64'
+      vcvars: 'x64'
+  - template: build-windows.yml
+    parameters:
+      name: win_x86
+      pool:
+        vmImage: 'windows-latest'
+      rid: 'win-x86'
+      vcvars: 'x86'
+  - template: build-windows.yml
+    parameters:
+      name: win_arm64
+      pool:
+        vmImage: 'windows-latest'
+      rid: 'win-arm64'
+      vcvars: 'x64_arm64'
+  - template: build-windows.yml
+    parameters:
+      name: win_arm
+      pool:
+        vmImage: 'windows-latest'
+      rid: 'win-arm'
+      vcvars: 'x64_arm'
+- stage: Archive
   jobs:
-  - job:
+  - job: 'runtimes'
+    pool:
+        vmImage: 'ubuntu-latest'
     steps:
-    - publish: $(Build.SourcesDirectory)/runtimes.zip
-      artifact: Runtimes.zip
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        source: 'current'
+        path: '$(Build.ArtifactStagingDirectory)/runtimes/'
+    - bash: |
+        shopt -s extglob
+        bin_path='$(Build.ArtifactStagingDirectory)/runtimes/'
+        for rid in `ls $bin_path`; do
+            mkdir $bin_path/$rid/native
+            mv -t $bin_path/$rid/native $bin_path/$rid/!(native)
+        done
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/runtimes'
+        includeRootFolder: true
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/runtimes.zip'
+        replaceExistingArchive: true
+        verbose: true
+    - publish: $(Build.ArtifactStagingDirectory)/runtimes.zip
+      artifact: runtimes.zip
+    - publish: $(Build.ArtifactStagingDirectory)/runtimes
+      artifact: runtimes
+
+- stage: Nuget
+  jobs:
+  - job: 'pack'
+    pool:
+        vmImage: 'windows-latest'
+    steps:
+    - pwsh: .\gen-nupkg.ps1
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        source: 'current'
+        path: '$(Build.SourcesDirectory)/runtimes/'
+    - script: mkdir $(Build.ArtifactStagingDirectory)\nupkg
+    - task: NuGetCommand@2
+      inputs:
+        command: 'pack'
+        packagesToPack: 'libjieba-c.nuspec'
+        versioningScheme: 'off'
+        packDestination: '$(Build.ArtifactStagingDirectory)/nupkg'
+    - publish: $(Build.ArtifactStagingDirectory)/nupkg
+      artifact: nuget_package
+
+- stage: Release
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/tags/'))
+  jobs:
+  - job: 'github'
+    pool:
+        vmImage: 'ubuntu-latest'
+    steps:
+    - download: current
+    - task: GitHubRelease@1
+      inputs:
+        gitHubConnection: 'github-repo-access'
+        repositoryName: '$(Build.Repository.Name)'
+        action: 'create'
+        target: '$(Build.SourceVersion)'
+        tagSource: 'gitTag'
+        changeLogCompareToRelease: 'lastFullRelease'
+        changeLogType: 'commitBased'

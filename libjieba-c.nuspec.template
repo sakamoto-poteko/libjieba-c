@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+    <metadata>
+        <id>libjieba-c</id>
+        <version>##version##</version>
+        <authors>Poteko Sakamoto</authors>
+        <owners>hmasterwang</owners>
+        <projectUrl>https://github.com/sakamoto-poteko/libjieba-c</projectUrl>
+        <licenseUrl>https://github.com/sakamoto-poteko/libjieba-c/blob/azpl/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Yet a better C wrapper for cppjieba</description>
+        <copyright>Copyright ©2019 Poteko Sakamoto</copyright>
+        <tags>utility jieba cppjieba jieba-c native</tags>
+    </metadata>
+
+    <files>
+        <file src="runtimes\**" target="runtimes" />
+    </files>
+</package>
