@@ -1,0 +1,24 @@
+parameters:
+  name: ''
+  rid: ''
+  output: 'libjieba-c.so'
+  arch: ''
+
+jobs:
+- job: ${{parameters.name}}
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - checkout: self
+    submodules: true
+  - bash: |
+      docker run --rm dockcross/${{parameters.arch}} > ./dockcross
+      chmod +x ./dockcross
+    displayName: install_toolchain
+  - bash: |
+      ./dockcross cmake -Bbuild/${{parameters.rid}} -H. -DCMAKE_BUILD_TYPE=Release
+      ./dockcross make -Cbuild/${{parameters.rid}}
+    displayName: build
+
+  - publish: $(Build.SourcesDirectory)/build/${{parameters.rid}}/${{parameters.output}}
+    artifact: ${{parameters.rid}}

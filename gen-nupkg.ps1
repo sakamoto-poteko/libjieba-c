@@ -4,4 +4,11 @@ param([string]$current_ref)
 $version = (git describe --tags HEAD) | Out-String
 $version = $version.Trim().Remove(0, 1)
 
-((Get-Content -path libjieba-c.nuspec.template -Raw) -replace '##version##', $version) | Set-Content -Path libjieba-c.nuspec
+[string]$revision
+$revision = (git rev-parse HEAD) | Out-String
+$revision = $revision.Trim()
+
+$content = Get-Content -path libjieba-c.nuspec.template -Raw
+$filledContent = $content.Replace('##version##', $version)
+$filledContent = $filledContent.Replace('##revision##', $revision)
+Set-Content -Path libjieba-c.nuspec -Value $filledContent

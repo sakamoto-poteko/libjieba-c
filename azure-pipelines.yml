@@ -1,6 +1,13 @@
+trigger:
+  branches:
+    include:
+    - '*'
+    - 'refs/tags/*'
+
 stages:
 - stage: Build
   jobs:
+  # osx build
   - template: ci/build-unix.yml
     parameters:
       name: osx_x64
@@ -9,42 +16,39 @@ stages:
       rid: 'osx-x64'
       output: 'libjieba-c.dylib'
 
-  - template: ci/build-debian.yml
+  # dockcross builds
+  - template: ci/build-dockcross.yml
     parameters:
-      name: linux_x64
-      pool:
-        vmImage: 'ubuntu-18.04'
-      triplet: x86_64-linux-gnu
+      name: linux_x64_dockcross
+      arch: linux-x64
       rid: 'linux-x64'
-      output: 'libjieba-c.so'
-  - template: ci/build-debian.yml
+  - template: ci/build-dockcross.yml
     parameters:
-      name: linux_x86
-      pool:
-        vmImage: 'ubuntu-18.04'
-      triplet: i686-linux-gnu
+      name: linux_x86_dockcross
+      arch: linux-x86
       rid: 'linux-x86'
-      output: 'libjieba-c.so'
-      cross: true
-  - template: ci/build-debian.yml
+  - template: ci/build-dockcross.yml
     parameters:
-      name: linux_arm64
-      pool:
-        vmImage: 'ubuntu-18.04'
-      triplet: aarch64-linux-gnu
-      rid: 'linux-arm64'
-      output: 'libjieba-c.so'
-      cross: true
-  - template: ci/build-debian.yml
-    parameters:
-      name: linux_arm
-      pool:
-        vmImage: 'ubuntu-18.04'
-      triplet: arm-linux-gnueabihf
+      name: linux_armv7_dockcross
+      arch: linux-armv7
       rid: 'linux-arm'
-      output: 'libjieba-c.so'
-      cross: true
+  - template: ci/build-dockcross.yml
+    parameters:
+      name: linux_arm64_dockcross
+      arch: linux-arm64
+      rid: 'linux-arm64'
+  - template: ci/build-dockcross.yml
+    parameters:
+      name: android_arm_dockcross
+      arch: android-arm
+      rid: 'android-arm'
+  - template: ci/build-dockcross.yml
+    parameters:
+      name: android_arm64_dockcross
+      arch: android-arm64
+      rid: 'android-arm64'
 
+  # windows builds
   - template: ci/build-windows.yml
     parameters:
       name: win_x64
@@ -110,6 +114,10 @@ stages:
     pool:
         vmImage: 'windows-latest'
     steps:
+    - task: NuGetToolInstaller@1
+      inputs:
+        versionSpec: '5.4.0'
+        checkLatest: true
     - pwsh: .\gen-nupkg.ps1
     - task: DownloadPipelineArtifact@2
       inputs:
@@ -126,19 +134,23 @@ stages:
       artifact: nuget_package
 
 - stage: Release
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/tags/'))
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   jobs:
   - job: 'github'
     pool:
         vmImage: 'ubuntu-latest'
     steps:
-    - download: current
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        path: $(Build.ArtifactStagingDirectory)
     - task: GitHubRelease@1
       inputs:
-        gitHubConnection: 'github-repo-access'
+        gitHubConnection: 'repo-oauth'
         repositoryName: '$(Build.Repository.Name)'
         action: 'create'
         target: '$(Build.SourceVersion)'
         tagSource: 'gitTag'
         changeLogCompareToRelease: 'lastFullRelease'
         changeLogType: 'commitBased'
+        assets: '$(Build.ArtifactStagingDirectory)/**'

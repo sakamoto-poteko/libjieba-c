@@ -6,7 +6,8 @@
         <authors>Poteko Sakamoto</authors>
         <owners>hmasterwang</owners>
         <projectUrl>https://github.com/sakamoto-poteko/libjieba-c</projectUrl>
-        <licenseUrl>https://github.com/sakamoto-poteko/libjieba-c/blob/azpl/LICENSE</licenseUrl>
+        <repository type="git" url="https://github.com/sakamoto-poteko/libjieba-c.git" commit="##revision##" />
+        <license type="expression">MIT</license>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Yet a better C wrapper for cppjieba</description>
         <copyright>Copyright ©2019 Poteko Sakamoto</copyright>
