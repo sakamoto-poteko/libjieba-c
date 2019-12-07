@@ -1,16 +1,7 @@
-trigger:
-  branches:
-    include:
-    - '*'
-    tags:
-    - '*'
-  paths:
-    exclude:
-    - README.md
 stages:
 - stage: Build
   jobs:
-  - template: build-unix.yml
+  - template: ci/build-unix.yml
     parameters:
       name: osx_x64
       pool:
@@ -18,7 +9,7 @@ stages:
       rid: 'osx-x64'
       output: 'libjieba-c.dylib'
 
-  - template: build-debian.yml
+  - template: ci/build-debian.yml
     parameters:
       name: linux_x64
       pool:
@@ -26,7 +17,7 @@ stages:
       triplet: x86_64-linux-gnu
       rid: 'linux-x64'
       output: 'libjieba-c.so'
-  - template: build-debian.yml
+  - template: ci/build-debian.yml
     parameters:
       name: linux_x86
       pool:
@@ -35,7 +26,7 @@ stages:
       rid: 'linux-x86'
       output: 'libjieba-c.so'
       cross: true
-  - template: build-debian.yml
+  - template: ci/build-debian.yml
     parameters:
       name: linux_arm64
       pool:
@@ -44,7 +35,7 @@ stages:
       rid: 'linux-arm64'
       output: 'libjieba-c.so'
       cross: true
-  - template: build-debian.yml
+  - template: ci/build-debian.yml
     parameters:
       name: linux_arm
       pool:
@@ -54,34 +45,35 @@ stages:
       output: 'libjieba-c.so'
       cross: true
 
-  - template: build-windows.yml
+  - template: ci/build-windows.yml
     parameters:
       name: win_x64
       pool:
         vmImage: 'windows-latest'
       rid: 'win-x64'
       vcvars: 'x64'
-  - template: build-windows.yml
+  - template: ci/build-windows.yml
     parameters:
       name: win_x86
       pool:
         vmImage: 'windows-latest'
       rid: 'win-x86'
       vcvars: 'x86'
-  - template: build-windows.yml
+  - template: ci/build-windows.yml
     parameters:
       name: win_arm64
       pool:
         vmImage: 'windows-latest'
       rid: 'win-arm64'
       vcvars: 'x64_arm64'
-  - template: build-windows.yml
+  - template: ci/build-windows.yml
     parameters:
       name: win_arm
       pool:
         vmImage: 'windows-latest'
       rid: 'win-arm'
       vcvars: 'x64_arm'
+
 - stage: Archive
   jobs:
   - job: 'runtimes'
