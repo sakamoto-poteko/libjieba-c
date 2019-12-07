@@ -1,3 +1,12 @@
+trigger:
+  branches:
+    include:
+    - '*'
+    tags:
+    - '*'
+  paths:
+    exclude:
+    - README.md
 stages:
 - stage: Build
   jobs:
