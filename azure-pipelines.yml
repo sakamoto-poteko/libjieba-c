@@ -140,10 +140,11 @@ stages:
     pool:
         vmImage: 'ubuntu-latest'
     steps:
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        buildType: 'current'
-        path: $(Build.ArtifactStagingDirectory)
+    - download: 'current'
+    - bash: |
+        mkdir release-assets
+        mv $(Pipeline.Workspace)/runtimes.zip/* release-assets/
+        mv $(Pipeline.Workspace)/nuget_package/* release-assets/
     - task: GitHubRelease@1
       inputs:
         gitHubConnection: 'repo-oauth'
@@ -153,4 +154,4 @@ stages:
         tagSource: 'gitTag'
         changeLogCompareToRelease: 'lastFullRelease'
         changeLogType: 'commitBased'
-        assets: '$(Build.ArtifactStagingDirectory)/**'
+        assets: 'release-assets/*'
